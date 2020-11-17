@@ -20,8 +20,15 @@ import javax.imageio.ImageIO;
 public class Procesamiento {
 
     private SecretKey clave; //llave
+    private IvParameterSpec vector;
 
-    public Procesamiento(String llave) throws Exception {
+    public Procesamiento(String llave, String vi) throws Exception {
+        byte vo[] = vi.getBytes();
+        if (vo.length!=8) {
+            System.out.println("ERROR el tamaño del vector de incialización debe de ser de 8 bytes");
+            System.exit(0);
+        }
+        vector = new IvParameterSpec(vo);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("DES");
         DESKeySpec kspec = new DESKeySpec(llave.getBytes());
         clave = skf.generateSecret(kspec);
@@ -29,9 +36,22 @@ public class Procesamiento {
 
     public void cifrar(String mOperacion, String ruta) throws Exception {
         //Se indica el modo de operacion
-        Cipher cifrador = Cipher.getInstance("DES/" + mOperacion + "/PKCS5Padding");
-        cifrador.init(Cipher.ENCRYPT_MODE, clave);
- 
+        Cipher cifrador = Cipher.getInstance("DES/" + mOperacion + "/PKCS5Padding");   
+        String ruta_salida = "";
+        
+        if (mOperacion.equals("ECB")) {
+            ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_ecb.bmp";
+            cifrador.init(Cipher.ENCRYPT_MODE, clave);
+        }else if (mOperacion.equals("CBC")) {
+             ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_cbc.bmp";
+             cifrador.init(Cipher.ENCRYPT_MODE, clave,vector);
+        }else if (mOperacion.equals("CFB")) {
+             ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_cfb.bmp";
+             cifrador.init(Cipher.ENCRYPT_MODE, clave,vector);
+        }else if (mOperacion.equals("OFB")) {
+            ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_ofb.bmp";
+            cifrador.init(Cipher.ENCRYPT_MODE, clave,vector);
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
         BufferedImage img = ImageIO.read(new File(ruta));
         ImageIO.write(img, "BMP", baos);
@@ -68,14 +88,29 @@ public class Procesamiento {
         }
 
         BufferedImage imag = ImageIO.read(new ByteArrayInputStream(imagenCifrada));
-        ImageIO.write(imag, "BMP", new File("C:\\Users\\josep\\OneDrive\\Escritorio\\salida.bmp"));
+        ImageIO.write(imag, "BMP", new File(ruta_salida));
         
 
     }
 
     public void descifrar(String mOperacion, String ruta) throws Exception {
         Cipher cifrador = Cipher.getInstance("DES/" + mOperacion + "/PKCS5Padding");
-        cifrador.init(Cipher.DECRYPT_MODE, clave);
+        
+        String ruta_salida = "";
+        
+        if (mOperacion.equals("ECB")) {
+            ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_decb.bmp";
+            cifrador.init(Cipher.DECRYPT_MODE, clave);
+        }else if (mOperacion.equals("CBC")) {
+             ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_dcbc.bmp";
+             cifrador.init(Cipher.DECRYPT_MODE, clave,vector);
+        }else if (mOperacion.equals("CFB")) {
+             ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_dcfb.bmp";
+             cifrador.init(Cipher.DECRYPT_MODE, clave,vector);
+        }else if (mOperacion.equals("OFB")) {
+            ruta_salida = "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_dofb.bmp";
+            cifrador.init(Cipher.DECRYPT_MODE, clave,vector);
+        }
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
         BufferedImage img = ImageIO.read(new File(ruta));
@@ -97,8 +132,8 @@ public class Procesamiento {
             z++;
         }
 
-        byte[] textCifrado;
-        textCifrado = cifrador.update(texto);
+        byte[] textDescifrado;
+        textDescifrado = cifrador.update(texto);
 
         byte[] imagenCifrada = new byte[arreglo.length];
 
@@ -107,13 +142,13 @@ public class Procesamiento {
             if (i < 54) {
                 imagenCifrada[i] = arreglo[i];
             } else {
-                imagenCifrada[i] = textCifrado[j];
+                imagenCifrada[i] = textDescifrado[j];
                 j++;
             }
         }
 
         BufferedImage imag = ImageIO.read(new ByteArrayInputStream(imagenCifrada));
-        ImageIO.write(imag, "BMP", new File("C:\\Users\\josep\\OneDrive\\Escritorio\\salida_d.bmp"));
+        ImageIO.write(imag, "BMP", new File(ruta_salida));
          
     }
 

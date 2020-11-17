@@ -15,8 +15,8 @@ public class CifradorDES {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception{
-        Procesamiento pro = new Procesamiento("holamundo");
-        pro.descifrar("ECB", "C:\\Users\\josep\\OneDrive\\Escritorio\\salida.bmp");
+        Procesamiento pro = new Procesamiento("holamundo","11223344");
+        pro.descifrar("OFB", "C:\\Users\\josep\\OneDrive\\Escritorio\\thundercats_ofb.bmp");
     }
     
 }
